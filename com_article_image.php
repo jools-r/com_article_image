@@ -469,8 +469,9 @@ EOJS
             foreach ($rows as $row) {
                 extract($row);
 
+                $thumbnail = 1;
                 $images[] = '<p class="sortable" data-id="'.$id.'"><a href="index.php?event=image&step=image_edit&id='.$id.'" title="'.txpspecialchars($name).' ('.$id.')">'
-                .'<img src="'.imagesrcurl($id, $ext, $thumbnail).'" data-id="'.$id.'" data-ext="'.$ext.'" data-width="'.$w.'" data-height="'.$h.'" alt="'.txpspecialchars($alt).'" />'
+                .'<img src="'.$this->imagesrcurl($id, $ext, $thumbnail).'" data-id="'.$id.'" data-ext="'.$ext.'" data-width="'.$w.'" data-height="'.$h.'" alt="'.txpspecialchars($alt).'" />'
                 .'</a><button class="destroy"><span class="ui-icon ui-icon-close">'.gTxt('delete').'</span></button></p>';
             }
         }
@@ -489,8 +490,9 @@ EOJS
         foreach ($rows as $row) {
             extract($row);
 
+            $thumbnail = 1;
             $images[] = '<p data-id="'.$id.'"><a href="index.php?event=image&step=image_edit&id='.$id.'" title="'.txpspecialchars($name).' ('.$id.')">'
-                .'<img src="'.imagesrcurl($id, $ext, $thumbnail).'" data-id="'.$id.'" data-ext="'.$ext.'" data-width="'.$w.'" data-height="'.$h.'" alt="'.txpspecialchars($alt).'" />'//image(array('id' => $id))
+                .'<img src="'.$this->imagesrcurl($id, $ext, $thumbnail).'" data-id="'.$id.'" data-ext="'.$ext.'" data-width="'.$w.'" data-height="'.$h.'" alt="'.txpspecialchars($alt).'" />'//image(array('id' => $id))
                 .'</a><button class="destroy"><span class="ui-icon ui-icon-close">'.gTxt('delete').'</span></button></p>';
         }
 
@@ -551,6 +553,38 @@ EOJS
         $ids = implode(',', do_list_unique($rs['Image'].','.$ids));
 
         safe_update('textpattern', "Image='".doSlash($ids)."'", 'ID='.$GLOBALS['ID']);
+    }
+
+    /**
+     * smd_thumbnail compatible version of imagesrcurl
+     * Gets an image's absolute URL.
+     *
+     * @param   int    $id        The image
+     * @param   string $ext       The file extension
+     * @param   bool   $thumbnail If TRUE returns a URL to the thumbnail
+     * @return  string
+     * @package Image
+     */
+    public function imagesrcurl($id, $ext, $thumbnail = false)
+    {
+        global $img_dir;
+
+        // regular img src
+        $imgsrc = ihu.$img_dir.'/'.$id.$ext;
+
+        // Get value of smd_thumbnail thumb pref
+        $smd_thumbdir = get_pref('smd_thumb_default_profile');
+
+        if ($thumbnail) {
+            // smd_thumbnail path
+            if(!empty($smd_thumbdir)) {
+                $imgsrc = ihu.$img_dir.'/'.$smd_thumbdir.'/'.$id.$ext;
+            } else {
+                $imgsrc = ihu.$img_dir.'/'.$id.'t'.$ext;
+            }
+        }
+
+        return $imgsrc;
     }
 }
 
